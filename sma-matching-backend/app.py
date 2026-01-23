@@ -19,6 +19,9 @@ from models.user_model import init_user_collection
 # (plus tard tu ajouteras)
 from models.offer_model import init_offer_collection
 from models.cv_model import init_cv_collection
+from dotenv import load_dotenv
+load_dotenv()
+
 
 
 # ===============================
