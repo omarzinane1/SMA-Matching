@@ -18,12 +18,21 @@ def init_cv_collection():
 
 
 class CV:
-    def __init__(self, full_name: str, email: str, skills: list, offer_id: str = None, score: float = 0.0):
+    def __init__(
+        self, 
+        full_name: str, 
+        email: str, 
+        skills: list, 
+        offer_id: str = None, 
+        score: float = 0.0,
+        user_id: str = None  # ✅ nouvel attribut user_id
+    ):
         self.full_name = full_name
         self.email = email.lower()
         self.skills = skills  # liste de compétences
         self.offer_id = offer_id
         self.score = score
+        self.user_id = user_id  # ✅ stocke l'ID ou email de l'utilisateur
         self.date_created = datetime.utcnow()
 
     # ===============================
@@ -37,6 +46,7 @@ class CV:
             "skills": self.skills,
             "offer_id": self.offer_id,
             "score": self.score,
+            "user_id": self.user_id,  # ✅ ajoute dans la DB
             "date_created": self.date_created
         }
         result = cv_collection.insert_one(cv_data)

@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv()
 from flask import Flask
 from flask_cors import CORS
 
@@ -19,8 +21,9 @@ from models.user_model import init_user_collection
 # (plus tard tu ajouteras)
 from models.offer_model import init_offer_collection
 from models.cv_model import init_cv_collection
-from dotenv import load_dotenv
-load_dotenv()
+import os
+os.environ["CREWAI_DISABLE_TELEMETRY"] = "true"
+
 
 
 

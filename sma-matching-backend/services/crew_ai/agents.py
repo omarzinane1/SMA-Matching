@@ -1,31 +1,26 @@
 from crewai import Agent
-from crewai.llm import LLM
-
-groq_llm = LLM(
-    model="groq/llama3-70b-8192"
-)
-
-# ===============================
-# Agents CrewAI sans LLM externe
-# ===============================
+from .llm import groq_llm
 
 cv_agent = Agent(
-    role="HR CV Expert",
-    goal="Extract skills from CV",
-    backstory="Senior HR expert with deep CV analysis experience",
-    llm=groq_llm
+    role="CV Analyzer",
+    goal="Extract technical skills from a CV",
+    backstory="Senior HR expert specialized in CV parsing",
+    llm=groq_llm,
+    verbose=True
 )
 
 offer_agent = Agent(
-    role="Job Analyst",
+    role="Job Offer Analyzer",
     goal="Extract required skills from job offers",
     backstory="Expert in job description analysis",
-    llm=groq_llm
+    llm=groq_llm,
+    verbose=True
 )
 
 matching_agent = Agent(
     role="Matching Expert",
-    goal="Calculate CV-job compatibility score",
-    backstory="Data scientist in HR matching systems",
-    llm=groq_llm
+    goal="Calculate compatibility score between CV and job offer",
+    backstory="Data scientist specialized in HR matching systems",
+    llm=groq_llm,
+    verbose=True
 )

@@ -20,7 +20,8 @@ passlib[bcrypt]==1.7.4  # Pour hash des mots de passe
 # Upload / parsing fichiers CV
 # ===============================
 python-docx==0.8.11   # Pour lire fichiers .docx
-PyPDF2==3.1.0         # Pour lire fichiers PDF
+PyPDF2==3.0.1
+        # Pour lire fichiers PDF
 
 # ===============================
 # Crew AI SDK / requêtes

@@ -1,33 +1,32 @@
-from crewai import Agent, Task, Crew
-from crewai.llm import LLM
+from crewai import Agent, Task, Crew, LLM
+import os
 
-groq_llm = LLM(
-    model="groq/llama3-70b-8192"
+if not os.getenv("GROQ_API_KEY"):
+    raise RuntimeError("❌ GROQ_API_KEY manquant")
+
+llm = LLM(
+    model="groq/llama-3.3-70b-versatile",
+    temperature=0.2
 )
 
 cv_agent = Agent(
-    role="CV Analyzer",
+    role="CV Skill Extractor",
     goal="Extraire les compétences techniques depuis un CV",
-    backstory="Expert en recrutement IT",
-    llm=groq_llm,
+    backstory="Expert RH en analyse de CV techniques",
+    llm=llm,
     verbose=True
 )
 
 def extract_skills_from_cv(cv_text: str):
-
     task = Task(
         description=f"""
-        Analyse le CV suivant et extrais uniquement
-        les compétences techniques sous forme de liste JSON.
+        Analyse le CV suivant et retourne uniquement
+        les compétences techniques sous forme de JSON.
 
-        CV:
+        CV :
         {cv_text}
         """,
-        expected_output="""
-        Un tableau JSON de compétences techniques.
-        Exemple:
-        ["Python", "Flask", "React", "Docker"]
-        """,
+        expected_output="JSON list of skills",
         agent=cv_agent
     )
 
@@ -37,5 +36,4 @@ def extract_skills_from_cv(cv_text: str):
         verbose=True
     )
 
-    result = crew.kickoff()
-    return result
+    return crew.kickoff()

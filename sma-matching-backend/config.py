@@ -1,5 +1,10 @@
 # config.py
 import os
+from dotenv import load_dotenv
+
+
+# Charger les variables d'environnement depuis .env
+load_dotenv()
 
 class Config:
     # ===============================
@@ -22,3 +27,7 @@ class Config:
     # ===============================
     JSON_SORT_KEYS = False  # Pour garder l'ordre des clés dans les réponses JSON
     DEBUG = True            # Active le debug Flask (désactiver en prod)
+       # ===============================
+    # IA / LLM (Groq)
+    # ===============================
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
