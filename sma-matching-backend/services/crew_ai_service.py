@@ -8,7 +8,6 @@ llm = LLM(
     model="groq/llama-3.3-70b-versatile",
     temperature=0.2
 )
-
 cv_agent = Agent(
     role="CV Skill Extractor",
     goal="Extraire les compétences techniques depuis un CV",
