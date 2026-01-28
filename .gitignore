@@ -1,0 +1,21 @@
+# Environment variables
+.env
+.env.*
+
+# Backend Flask
+sma-matching-backend/.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.env/venv/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
