@@ -60,7 +60,7 @@ export default function ResultsPage() {
 
         const sorted = (resultsData.cvs || [])
           .slice()
-          .sort((a: CV, b: CV) => (b.score?.score ?? 0) - (a.score?.score ?? 0));
+          .sort((a: CV, b: CV) => (b.score?.score || 0) - (a.score?.score || 0));
 
         setCvs(sorted);
       } catch (err) {
@@ -82,9 +82,7 @@ export default function ResultsPage() {
     setIsProcessing(true);
     try {
       const top3 = await keepTop3(token, offerId);
-      setCvs(
-        (top3 || []).slice().sort((a, b) => (b.score?.score ?? 0) - (a.score?.score ?? 0))
-      );
+      setCvs(top3.sort((a, b) => (b.score?.score || 0) - (a.score?.score || 0)));
       setError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to keep top 3');
@@ -113,12 +111,12 @@ export default function ResultsPage() {
   };
 
   // ===============================
-  // Score styles
+  // Score color
   // ===============================
-  const getScoreBg = (score: number) => {
-    if (score >= 80) return 'bg-green-100 text-green-800';
-    if (score >= 60) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'bg-green-500';
+    if (score >= 60) return 'bg-yellow-500';
+    return 'bg-red-500';
   };
 
   return (
@@ -165,15 +163,10 @@ export default function ResultsPage() {
                 {/* Actions */}
                 {cvs.length > 0 && (
                   <div className="flex gap-3 flex-wrap">
-                    <Button
-                      onClick={handleKeepTop3}
-                      disabled={isProcessing}
-                      className="gap-2"
-                    >
+                    <Button onClick={handleKeepTop3} disabled={isProcessing} className="gap-2">
                       <Star className="w-4 h-4" />
                       Keep Top 3
                     </Button>
-
                     <Button
                       variant="outline"
                       onClick={() => setDeleteConfirm(true)}
@@ -230,22 +223,20 @@ export default function ResultsPage() {
                     {cvs.map((cv, index) => {
                       const scoreValue = cv.score?.score ?? 0;
                       return (
-                        <Card key={`${cv._id}-${index}`} className="hover:shadow-md">
-                          <CardContent className="pt-6 flex gap-4">
+                        <Card key={cv._id ?? index} className="hover:shadow-md">
+                          <CardContent className="pt-6 flex items-center gap-4">
+                            {/* Rank */}
                             <Badge variant="outline">#{index + 1}</Badge>
 
-                            <div className="flex-1">
-                              <h3 className="font-semibold">{cv.full_name}</h3>
-                              <p className="text-sm text-muted-foreground">{cv.email}</p>
+                            {/* Info */}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold truncate">{cv.full_name}</h3>
+                              <p className="text-sm text-muted-foreground truncate">{cv.email}</p>
 
                               {cv.skills?.length > 0 && (
                                 <div className="mt-2 flex gap-2 flex-wrap">
-                                  {cv.skills.slice(0, 5).map((skill, i) => (
-                                    <Badge
-                                      key={`${cv._id}-skill-${i}`}
-                                      variant="secondary"
-                                      className="text-xs"
-                                    >
+                                  {cv.skills.slice(0, 5).map((skill) => (
+                                    <Badge key={skill} variant="secondary" className="text-xs">
                                       {skill}
                                     </Badge>
                                   ))}
@@ -258,12 +249,15 @@ export default function ResultsPage() {
                               )}
                             </div>
 
-                            <div
-                              className={`px-4 py-2 rounded-lg font-bold ${getScoreBg(
-                                scoreValue
-                              )}`}
-                            >
-                              {Math.round(scoreValue)}%
+                            {/* Score */}
+                            <div className="flex-shrink-0 w-24">
+                              <div className="text-xs font-semibold mb-1 text-right">{scoreValue}%</div>
+                              <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div
+                                  className={`${getScoreColor(scoreValue)} h-full`}
+                                  style={{ width: `${Math.min(scoreValue, 100)}%` }}
+                                />
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
