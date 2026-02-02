@@ -10,7 +10,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChevronRight, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
-import type { JobOffer } from '@/lib/api';
+
+type JobOffer = {
+  _id?: string;
+  id?: string;
+  title: string;
+  description: string;
+  cvCount: number;
+};
 
 export default function ResultsIndexPage() {
   const { token } = useAuth();
@@ -19,13 +26,22 @@ export default function ResultsIndexPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    // ⛔ stop if token not ready
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
     const fetchOffers = async () => {
-      if (!token) return;
       try {
-        const data: JobOffer[] = await getOffers(token);
-        setOffers(data.filter((o: JobOffer) => o.cvCount > 0)); // ⚡ Typage corrigé ici
+        const data = await getOffers(token);
+        const filtered = data.filter((o: JobOffer) => o.cvCount > 0);
+        alert(filtered.length)
+        setOffers(filtered);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load offers');
+        setError(
+          err instanceof Error ? err.message : 'Failed to load offers'
+        );
       } finally {
         setIsLoading(false);
       }
@@ -36,35 +52,45 @@ export default function ResultsIndexPage() {
 
   return (
     <ProtectedRoute>
-      <div className="flex">
+      <div className="flex min-h-screen">
         <Sidebar />
+
         <div className="flex-1 ml-64">
           <Topbar title="Results" />
-          
-          <main className="pt-24 pb-12 px-8">
+
+          <main className="pt-24 pb-12 px-8 max-w-5xl">
             <div className="mb-8">
               <h2 className="text-xl font-semibold">Candidate Matching Results</h2>
-              <p className="text-sm text-muted-foreground">View AI-calculated matching scores for uploaded CVs</p>
+              <p className="text-sm text-muted-foreground">
+                View AI-calculated matching scores for uploaded CVs
+              </p>
             </div>
 
+            {/* ERROR */}
             {error && (
-              <div className="mb-6 p-4 bg-destructive/10 border border-destructive/30 rounded-lg text-sm text-destructive">
+              <div className="mb-6 p-4 rounded-lg border border-red-300 bg-red-50 text-red-700 text-sm">
                 {error}
               </div>
             )}
 
+            {/* LOADING */}
             {isLoading && (
-              <div className="flex justify-center items-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              <div className="flex justify-center py-20">
+                <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
               </div>
             )}
 
-            {offers.length === 0 && !isLoading && (
+            {/* EMPTY */}
+            {!isLoading && offers.length === 0 && (
               <Card className="border-dashed">
-                <CardContent className="pt-12 pb-12 text-center">
-                  <TrendingUp className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                  <h3 className="text-lg font-semibold mb-2">No results available</h3>
-                  <p className="text-muted-foreground mb-6">Upload CVs for job offers to see matching results.</p>
+                <CardContent className="py-16 text-center">
+                  <TrendingUp className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="text-lg font-semibold mb-2">
+                    No results available
+                  </h3>
+                  <p className="text-muted-foreground mb-6">
+                    Upload CVs for job offers to see matching results.
+                  </p>
                   <Link href="/cv/upload">
                     <Button>Upload CVs</Button>
                   </Link>
@@ -72,30 +98,39 @@ export default function ResultsIndexPage() {
               </Card>
             )}
 
-            {offers.length > 0 && (
-              <div className="space-y-4 max-w-2xl">
-                {offers.map((offer: JobOffer) => (
-                  <Link key={offer.id} href={`/results/${offer.id}`}>
-                    <Card className="cursor-pointer hover:shadow-md transition-shadow">
-                      <CardContent className="pt-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold line-clamp-1">{offer.title}</h3>
-                            <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                              {offer.description}
-                            </p>
-                            <div className="mt-3">
-                              <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
-                                {offer.cvCount} CV{offer.cvCount !== 1 ? 's' : ''}
-                              </span>
+            {/* LIST */}
+            {!isLoading && offers.length > 0 && (
+              <div className="space-y-4">
+                {offers.map((offer) => {
+                  const offerId = offer._id || offer.id;
+                  if (!offerId) return null;
+
+                  return (
+                    <Link key={offerId} href={`/results/${offerId}`}>
+                      <Card className="hover:shadow-md transition cursor-pointer">
+                        <CardContent className="pt-6">
+                          <div className="flex justify-between items-center gap-4">
+                            <div className="flex-1">
+                              <h3 className="font-semibold">
+                                {offer.title}
+                              </h3>
+                              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                                {offer.description}
+                              </p>
+                              <div className="mt-3">
+                                <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                                  {offer.cvCount} CV
+                                  {offer.cvCount > 1 ? 's' : ''}
+                                </span>
+                              </div>
                             </div>
+                            <ChevronRight className="w-5 h-5 text-muted-foreground" />
                           </div>
-                          <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0 ml-4" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </main>
