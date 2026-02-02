@@ -1,106 +1,143 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Header } from '@/components/Header';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { getOffers } from '@/lib/api';
+import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
+import { Sidebar } from '@/components/layout/Sidebar';
+import { Topbar } from '@/components/layout/Topbar';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Spinner } from '@/components/ui/spinner';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Upload, FileText, TrendingUp, Plus } from 'lucide-react';
 import Link from 'next/link';
-import { useAuth } from '@/app/context/AuthContext';
-
-interface Offer {
-  _id: string;
-  title: string;
-  description: string;
-  createdAt: string;
-}
 
 export default function DashboardPage() {
-  const [offers, setOffers] = useState<Offer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const { user } = useAuth();
+  const { token } = useAuth();
+  const router = useRouter();
+  const [stats, setStats] = useState({ offers: 0, cvs: 0, topMatches: 0 });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchOffers = async () => {
+    const fetchData = async () => {
+      if (!token) return;
       try {
-        const token = localStorage.getItem('token');
-        const res = await fetch('/api/offers', {
-          headers: { Authorization: `Bearer ${token}` },
+        const offers = await getOffers(token);
+        setStats({
+          offers: offers.length,
+          cvs: offers.reduce((sum, o) => sum + (o.cv_ids?.length || 0), 0),
+          topMatches: 0,
         });
-
-        if (!res.ok) throw new Error('Failed to fetch offers');
-        const data = await res.json();
-        setOffers(data.offers || []);
       } catch (err) {
-        setError((err as Error).message);
+        console.error('[v0] Error fetching dashboard data:', err);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
-    fetchOffers();
-  }, []);
+    fetchData();
+  }, [token]);
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background">
-        <Header />
+      <div className="flex">
+        <Sidebar />
+        <div className="flex-1 ml-64">
+          <Topbar title="Dashboard" />
 
-        <main className="max-w-7xl mx-auto px-4 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-4xl font-bold">Dashboard</h1>
-            {user?.role === 'admin' && (
-              <Link href="/create-offer">
-                <Button>Créer une offre</Button>
-              </Link>
-            )}
-          </div>
+          <main className="pt-24 pb-12 px-8">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                  <CardTitle className="text-sm font-medium">Total Job Offers</CardTitle>
+                  <FileText className="w-4 h-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.offers}</div>
+                  <p className="text-xs text-muted-foreground mt-1">Active positions</p>
+                </CardContent>
+              </Card>
 
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <Spinner />
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                  <CardTitle className="text-sm font-medium">Total CVs Uploaded</CardTitle>
+                  <Upload className="w-4 h-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.cvs}</div>
+                  <p className="text-xs text-muted-foreground mt-1">Candidates reviewed</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                  <CardTitle className="text-sm font-medium">Top Matches</CardTitle>
+                  <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.topMatches}</div>
+                  <p className="text-xs text-muted-foreground mt-1">Best candidates</p>
+                </CardContent>
+              </Card>
             </div>
-          ) : error ? (
-            <div className="bg-destructive/10 text-destructive p-4 rounded-lg">
-              {error}
-            </div>
-          ) : offers.length === 0 ? (
-            <Card className="p-8 text-center">
-              <p className="text-muted-foreground mb-4">Aucune offre disponible</p>
-              {user?.role === 'admin' && (
-                <Link href="/create-offer">
-                  <Button>Créer une offre</Button>
+
+            {/* Quick Actions */}
+            <div className="mb-12">
+              <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Link href="/offers/new">
+                  <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-primary/10 rounded-lg">
+                          <FileText className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">Create Job Offer</h3>
+                          <p className="text-sm text-muted-foreground">Post a new job position</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </Link>
-              )}
-            </Card>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {offers.map((offer) => (
-                <Card key={offer._id} className="p-6 hover:shadow-lg transition">
-                  <h3 className="text-xl font-semibold mb-2">{offer.title}</h3>
-                  <p className="text-muted-foreground mb-4 line-clamp-2">
-                    {offer.description}
-                  </p>
-                  <div className="flex gap-2">
-                    <Link href={`/results?offerId=${offer._id}`} className="flex-1">
-                      <Button variant="outline" className="w-full bg-transparent">
-                        Voir CVs
-                      </Button>
-                    </Link>
-                    {user?.role === 'admin' && (
-                      <>
-                        <Button variant="outline">Éditer</Button>
-                        <Button variant="destructive">Supprimer</Button>
-                      </>
-                    )}
-                  </div>
-                </Card>
-              ))}
+
+                <Link href="/cv/upload">
+                  <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-accent/10 rounded-lg">
+                          <Upload className="w-6 h-6 text-accent" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">Upload CV</h3>
+                          <p className="text-sm text-muted-foreground">Add candidate resumes</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </div>
             </div>
-          )}
-        </main>
+
+            {/* Empty State */}
+            {stats.offers === 0 && !isLoading && (
+              <Card className="border-dashed">
+                <CardContent className="pt-12 pb-12 text-center">
+                  <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-semibold mb-2">No job offers yet</h3>
+                  <p className="text-muted-foreground mb-6">Create your first job offer to get started with candidate matching.</p>
+                  <Link href="/offers/new">
+                    <Button>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create First Offer
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+          </main>
+        </div>
       </div>
     </ProtectedRoute>
   );

@@ -33,7 +33,12 @@ os.environ["CREWAI_DISABLE_TELEMETRY"] = "true"
 app = Flask(__name__)
 
 # Autoriser les requêtes du frontend (Next.js)
-CORS(app, supports_credentials=True)
+#CORS(app, supports_credentials=True)
+CORS(
+    app,
+    resources={r"/api/*": {"origins": "http://localhost:3000"}},
+    supports_credentials=True
+)
 
 # ===============================
 # Chargement de la configuration

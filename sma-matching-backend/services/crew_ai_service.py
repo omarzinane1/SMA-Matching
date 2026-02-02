@@ -1,38 +1,53 @@
-from crewai import Agent, Task, Crew, LLM
-import os
+from crewai import Crew
+from services.crew_ai.tasks import cv_task, offer_task, match_task
 
-if not os.getenv("GROQ_API_KEY"):
-    raise RuntimeError("❌ GROQ_API_KEY manquant")
-
-llm = LLM(
-    model="groq/llama-3.3-70b-versatile",
-    temperature=0.2
-)
-cv_agent = Agent(
-    role="CV Skill Extractor",
-    goal="Extraire les compétences techniques depuis un CV",
-    backstory="Expert RH en analyse de CV techniques",
-    llm=llm,
-    verbose=True
-)
 
 def extract_skills_from_cv(cv_text: str):
-    task = Task(
-        description=f"""
-        Analyse le CV suivant et retourne uniquement
-        les compétences techniques sous forme de JSON.
-
-        CV :
-        {cv_text}
-        """,
-        expected_output="JSON list of skills",
-        agent=cv_agent
-    )
+    """
+    Extract skills + name + email from CV
+    """
+    task = cv_task(cv_text)
 
     crew = Crew(
-        agents=[cv_agent],
+        agents=[task.agent],
         tasks=[task],
-        verbose=True
+        verbose=False
     )
 
-    return crew.kickoff()
+    result = crew.kickoff()
+
+    return result
+
+
+def extract_skills_from_offer(offer_text: str):
+    """
+    Extract required skills from job offer description
+    """
+    task = offer_task(offer_text)
+
+    crew = Crew(
+        agents=[task.agent],
+        tasks=[task],
+        verbose=False
+    )
+
+    result = crew.kickoff()
+
+    return result
+
+
+def calculate_matching_score(cv_skills, offer_skills):
+    """
+    Calculate compatibility score between CV & Offer
+    """
+    task = match_task(cv_skills, offer_skills)
+
+    crew = Crew(
+        agents=[task.agent],
+        tasks=[task],
+        verbose=False
+    )
+
+    result = crew.kickoff()
+
+    return result

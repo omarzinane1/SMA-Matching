@@ -1,19 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { getOffers } from '@/lib/api';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { ChevronRight, TrendingUp } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import type { JobOffer } from '@/lib/api';
 
-export default function ResultsIndexPage() {
+export default function UploadCVIndexPage() {
   const { token } = useAuth();
+  const router = useRouter();
   const [offers, setOffers] = useState<JobOffer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,8 +24,8 @@ export default function ResultsIndexPage() {
     const fetchOffers = async () => {
       if (!token) return;
       try {
-        const data: JobOffer[] = await getOffers(token);
-        setOffers(data.filter((o: JobOffer) => o.cvCount > 0)); // ⚡ Typage corrigé ici
+        const data = await getOffers(token);
+        setOffers(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load offers');
       } finally {
@@ -39,12 +41,14 @@ export default function ResultsIndexPage() {
       <div className="flex">
         <Sidebar />
         <div className="flex-1 ml-64">
-          <Topbar title="Results" />
-          
+          <Topbar title="Upload CV" />
+
           <main className="pt-24 pb-12 px-8">
             <div className="mb-8">
-              <h2 className="text-xl font-semibold">Candidate Matching Results</h2>
-              <p className="text-sm text-muted-foreground">View AI-calculated matching scores for uploaded CVs</p>
+              <h2 className="text-xl font-semibold">Select a Job Offer</h2>
+              <p className="text-sm text-muted-foreground">
+                Choose which position to upload a CV for
+              </p>
             </div>
 
             {error && (
@@ -59,23 +63,24 @@ export default function ResultsIndexPage() {
               </div>
             )}
 
-            {offers.length === 0 && !isLoading && (
+            {!isLoading && offers.length === 0 && (
               <Card className="border-dashed">
                 <CardContent className="pt-12 pb-12 text-center">
-                  <TrendingUp className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                  <h3 className="text-lg font-semibold mb-2">No results available</h3>
-                  <p className="text-muted-foreground mb-6">Upload CVs for job offers to see matching results.</p>
-                  <Link href="/cv/upload">
-                    <Button>Upload CVs</Button>
+                  <h3 className="text-lg font-semibold mb-2">No job offers available</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Create a job offer first before uploading CVs.
+                  </p>
+                  <Link href="/offers/new">
+                    <Button>Create Job Offer</Button>
                   </Link>
                 </CardContent>
               </Card>
             )}
 
-            {offers.length > 0 && (
+            {!isLoading && offers.length > 0 && (
               <div className="space-y-4 max-w-2xl">
-                {offers.map((offer: JobOffer) => (
-                  <Link key={offer.id} href={`/results/${offer.id}`}>
+                {offers.map((offer) => (
+                  <Link key={offer._id} href={`/cv/upload/${offer._id}`}>
                     <Card className="cursor-pointer hover:shadow-md transition-shadow">
                       <CardContent className="pt-6">
                         <div className="flex items-center justify-between">
@@ -84,11 +89,6 @@ export default function ResultsIndexPage() {
                             <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                               {offer.description}
                             </p>
-                            <div className="mt-3">
-                              <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
-                                {offer.cvCount} CV{offer.cvCount !== 1 ? 's' : ''}
-                              </span>
-                            </div>
                           </div>
                           <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0 ml-4" />
                         </div>

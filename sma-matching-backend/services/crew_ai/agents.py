@@ -1,6 +1,7 @@
 from crewai import Agent
 from .llm import groq_llm
 
+
 cv_agent = Agent(
     role="CV Analyzer",
     goal="Extract technical skills from a CV",

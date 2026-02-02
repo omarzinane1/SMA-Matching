@@ -4,93 +4,103 @@ import React from "react"
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/app/context/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
+import { login as apiLogin } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Briefcase } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    setIsLoading(true);
 
     try {
-      await login(email, password);
+      const response = await apiLogin(email, password);
+      login(response.token, response.user);
       router.push('/dashboard');
     } catch (err) {
-      setError((err as Error).message || 'Login failed');
+      setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background to-background flex items-center justify-center px-4">
       <Card className="w-full max-w-md">
-        <div className="p-8">
-          <h1 className="text-3xl font-bold text-center mb-2">SMA Matching</h1>
-          <p className="text-center text-muted-foreground mb-8">
-            Connectez-vous à votre compte
-          </p>
+        <CardHeader className="space-y-4 text-center">
+          <div className="flex justify-center">
+            <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center">
+              <Briefcase className="w-7 h-7 text-primary-foreground" />
+            </div>
+          </div>
+          <div>
+            <CardTitle className="text-2xl">SMA Platform</CardTitle>
+            <CardDescription>AI Recruitment Matching System</CardDescription>
+          </div>
+        </CardHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-sm text-destructive">
+                {error}
+              </div>
+            )}
+
             <div className="space-y-2">
-              <label className="block text-sm font-medium">Email</label>
+              <label htmlFor="email" className="block text-sm font-medium">
+                Email
+              </label>
               <Input
+                id="email"
                 type="email"
-                placeholder="votre@email.com"
+                placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={loading}
+                disabled={isLoading}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium">Mot de passe</label>
+              <label htmlFor="password" className="block text-sm font-medium">
+                Password
+              </label>
               <Input
+                id="password"
                 type="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                disabled={loading}
+                disabled={isLoading}
               />
             </div>
 
-            {error && (
-              <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
-              {loading ? 'Connexion...' : 'Se connecter'}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <p className="text-muted-foreground">
-              Pas de compte ?{' '}
-              <Link href="/register" className="text-primary hover:underline font-semibold">
-                S'inscrire
-              </Link>
-            </p>
+            <span className="text-muted-foreground">Don't have an account? </span>
+            <Link href="/register" className="text-primary hover:underline font-medium">
+              Sign up
+            </Link>
           </div>
-        </div>
+        </CardContent>
       </Card>
     </div>
   );

@@ -1,5 +1,6 @@
 {
     "python.analysis.extraPaths": [
-        "./sma-matching-backend/services"
+        "./sma-matching-backend/services",
+        "./sma-matching-backend/services/crew_ai"
     ]
 }

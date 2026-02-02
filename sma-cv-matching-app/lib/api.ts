@@ -1,136 +1,193 @@
-import { config } from './config';
+import { Key } from "readline";
 
-interface FetchOptions extends RequestInit {
-  headers?: Record<string, string>;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
+export interface AuthResponse {
+  token: string;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+  };
 }
 
-interface ApiResponse<T> {
-  data?: T;
-  error?: string;
-  message?: string;
+export interface JobOffer {
+  date_created(date_created: any): import("react").ReactNode;
+  id: string;
+  _id: Key | string | null | undefined;
+  title: string;
+  description: string;
+  createdAt: string;
+  cvCount: number;
 }
 
-/**
- * Wrapper autour de fetch pour les appels API
- * Ajoute automatiquement le token JWT aux headers
- */
-export async function apiCall<T = unknown>(
-  endpoint: string,
-  options: FetchOptions = {}
-): Promise<ApiResponse<T>> {
-  try {
-    const url = `${config.API_BASE_URL}${endpoint}`;
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+export interface CV {
+  id: string;
+  full_name: string;
+  email: string;
+  score: number;
+  skills: string[];
+  file_url?: string;
+}
 
-    const headers: Record<string, string> = {
+export interface ResultsResponse {
+  offer_id: string;
+  cvs: CV[];
+}
+
+// Auth APIs
+export async function login(email: string, password: string): Promise<AuthResponse> {
+  const res = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || 'Login failed');
+  }
+  
+  return res.json();
+}
+
+export async function register(email: string, password: string, name: string, role: string): Promise<AuthResponse> {
+  const res = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, name, role }),
+  });
+  
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || 'Registration failed');
+  }
+  
+  return res.json();
+}
+
+// Job Offers APIs
+export async function getOffers(token: string) {
+  const res = await fetch('http://localhost:5000/api/offers', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) throw new Error('Failed to fetch offers');
+
+  const data = await res.json();
+  return data.offers; // ✅ نرجعو غير Array
+}
+
+
+export async function createOffer(token: string, title: string, description: string): Promise<JobOffer> {
+  const res = await fetch(`${API_BASE_URL}/offers`, {
+    method: 'POST',
+    headers: {
       'Content-Type': 'application/json',
-      ...options.headers,
-    };
-
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      return {
-        error: error.message || 'Request failed',
-      };
-    }
-
-    const data = await response.json();
-    return { data };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return {
-      error: message,
-    };
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ title, description }),
+  });
+  
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || 'Failed to create offer');
   }
+  
+  return res.json();
 }
 
-/**
- * Upload un fichier (FormData)
- */
-export async function uploadFile(
-  endpoint: string,
-  file: File,
-  additionalData?: Record<string, string>
-): Promise<ApiResponse<unknown>> {
-  try {
-    const url = `${config.API_BASE_URL}${endpoint}`;
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+export async function deleteOffer(token: string, offerId: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/offers/${offerId}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  
+  if (!res.ok) throw new Error('Failed to delete offer');
+}
 
-    const formData = new FormData();
-    formData.append('file', file);
+// CV Upload API
+export async function uploadCV(token: string, offerId: string, file: File): Promise<CV> {
+  const formData = new FormData();
+  formData.append('cv', file); // ⚠️ le champ "cv" doit correspondre au backend
 
-    if (additionalData) {
-      Object.entries(additionalData).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
+  const res = await fetch(`${API_BASE_URL}/cv/upload/${offerId}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`, // le token est OK
+      // ❌ Ne PAS mettre Content-Type ici, FormData le gère automatiquement
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    let errorMessage = 'Failed to upload CV';
+    try {
+      const error = await res.json();
+      errorMessage = error.message || errorMessage;
+    } catch (err) {
+      // si le JSON n’est pas renvoyé
     }
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      return {
-        error: error.message || 'Upload failed',
-      };
-    }
-
-    const data = await response.json();
-    return { data };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Upload failed';
-    return {
-      error: message,
-    };
-  }
-}
-
-/**
- * Helper pour déterminer la couleur selon le score
- */
-export function getScoreColor(score: number): string {
-  if (score >= config.SCORE_EXCELLENT) return 'text-green-600 bg-green-50';
-  if (score >= config.SCORE_GOOD) return 'text-yellow-600 bg-yellow-50';
-  return 'text-red-600 bg-red-50';
-}
-
-export function getScoreBadgeClass(score: number): string {
-  if (score >= config.SCORE_EXCELLENT) return 'bg-green-100 text-green-800';
-  if (score >= config.SCORE_GOOD) return 'bg-yellow-100 text-yellow-800';
-  return 'bg-red-100 text-red-800';
-}
-
-/**
- * Formate un fichier pour l'upload
- */
-export function validateFile(file: File): { valid: boolean; error?: string } {
-  if (!config.ALLOWED_FILE_TYPES.includes(file.type)) {
-    return {
-      valid: false,
-      error: `Type de fichier non autorisé. Acceptés: ${config.ALLOWED_EXTENSIONS.join(', ')}`,
-    };
+    throw new Error(errorMessage);
   }
 
-  if (file.size > config.MAX_FILE_SIZE) {
-    return {
-      valid: false,
-      error: `Fichier trop volumineux. Maximum: ${config.MAX_FILE_SIZE / 1024 / 1024}MB`,
-    };
+  return res.json();
+}
+
+// ===============================
+// Results APIs
+// ===============================
+export async function getResults(
+  token: string,
+  offerId: string
+): Promise<ResultsResponse> {
+  const res = await fetch(`${API_BASE_URL}/results/${offerId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch results');
   }
 
-  return { valid: true };
+  return res.json();
+}
+
+export async function keepTop3(
+  token: string,
+  offerId: string
+): Promise<CV[]> {
+  const res = await fetch(`${API_BASE_URL}/results/top3/${offerId}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to keep top 3 CVs');
+  }
+
+  const data = await res.json();
+  return data.top3; // 🔥 TRÈS IMPORTANT
+}
+
+export async function deleteAllResults(
+  token: string,
+  offerId: string
+): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/results/delete_all/${offerId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to delete all results');
+  }
 }

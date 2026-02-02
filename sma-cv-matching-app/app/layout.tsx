@@ -2,15 +2,15 @@ import React from "react"
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
-import { AuthProvider } from './context/AuthContext'
+import { AuthProvider } from '@/context/AuthContext'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'SMA - CV & Offre Matching',
-  description: 'Système Multi-Agent pour le matching CV et offres d\'emploi',
+  title: 'SMA - AI Recruitment Platform',
+  description: 'Smart Matching Algorithm for HR recruitment',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -37,7 +37,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="fr">
+    <html lang="en">
       <body className={`font-sans antialiased`}>
         <AuthProvider>
           {children}

@@ -1,118 +1,140 @@
 'use client';
 
-import React, { useState } from "react";
+import React from "react"
+
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/app/context/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
+import { register as apiRegister } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Briefcase } from 'lucide-react';
 
 export default function RegisterPage() {
-  const [full_name, setFull_name] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('HR Manager');
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const { register } = useAuth();
+  const { login } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    if (password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères');
-      return;
-    }
-
-    setLoading(true);
+    setIsLoading(true);
 
     try {
-      await register({
-        full_name,
-        email,
-        password,
-      });
+      const response = await apiRegister(email, password, name, role);
+      login(response.token, response.user);
       router.push('/dashboard');
     } catch (err) {
-      setError((err as Error).message || 'Registration failed');
+      setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background to-background flex items-center justify-center px-4">
       <Card className="w-full max-w-md">
-        <div className="p-8">
-          <h1 className="text-3xl font-bold text-center mb-2">SMA Matching</h1>
-          <p className="text-center text-muted-foreground mb-8">
-            Créer un nouveau compte (Admin uniquement)
-          </p>
+        <CardHeader className="space-y-4 text-center">
+          <div className="flex justify-center">
+            <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center">
+              <Briefcase className="w-7 h-7 text-primary-foreground" />
+            </div>
+          </div>
+          <div>
+            <CardTitle className="text-2xl">Create Account</CardTitle>
+            <CardDescription>Join SMA Platform</CardDescription>
+          </div>
+        </CardHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-sm text-destructive">
+                {error}
+              </div>
+            )}
 
-            {/* Full name */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium">Nom complet</label>
+              <label htmlFor="name" className="block text-sm font-medium">
+                Full Name
+              </label>
               <Input
+                id="name"
                 type="text"
-                placeholder="Ex : Omar Zinane"
-                value={full_name}
-                onChange={(e) => setFull_name(e.target.value)}
+                placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 required
-                disabled={loading}
+                disabled={isLoading}
               />
             </div>
 
-            {/* Email */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium">Email</label>
+              <label htmlFor="email" className="block text-sm font-medium">
+                Email
+              </label>
               <Input
+                id="email"
                 type="email"
-                placeholder="votre@email.com"
+                placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={loading}
+                disabled={isLoading}
               />
             </div>
 
-            {/* Password */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium">Mot de passe</label>
+              <label htmlFor="password" className="block text-sm font-medium">
+                Password
+              </label>
               <Input
+                id="password"
                 type="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                disabled={loading}
+                disabled={isLoading}
               />
             </div>
 
-            {error && (
-              <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
+            <div className="space-y-2">
+              <label htmlFor="role" className="block text-sm font-medium">
+                Role
+              </label>
+              <select
+                id="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                disabled={isLoading}
+                className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground"
+              >
+                <option>HR Manager</option>
+                <option>Recruiter</option>
+                <option>Talent Acquisition Lead</option>
+              </select>
+            </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Inscription...' : "S'inscrire"}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Creating account...' : 'Sign Up'}
             </Button>
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <p className="text-muted-foreground">
-              Vous avez déjà un compte ?{' '}
-              <Link href="/login" className="text-primary hover:underline font-semibold">
-                Se connecter
-              </Link>
-            </p>
+            <span className="text-muted-foreground">Already have an account? </span>
+            <Link href="/login" className="text-primary hover:underline font-medium">
+              Sign in
+            </Link>
           </div>
-        </div>
+        </CardContent>
       </Card>
     </div>
   );

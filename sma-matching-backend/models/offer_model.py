@@ -53,11 +53,16 @@ class Offer:
         return result
 
     @staticmethod
-    def find_by_id(offer_id: str):
+    def find_by_id(offer_id):
         try:
+            if isinstance(offer_id, list):
+                print("❌ offer_id is a list:", offer_id)
+                return None
+
             offer = offers_collection.find_one(
-                {"_id": ObjectId(offer_id)}
+                {"_id": ObjectId(str(offer_id))}
             )
+
             if not offer:
                 return None
 
@@ -68,6 +73,7 @@ class Offer:
         except Exception as e:
             print("❌ Error find_by_id:", e)
             return None
+
 
     # ✅ ALIAS POUR COMPATIBILITÉ BACKEND
     @staticmethod

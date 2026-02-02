@@ -1,41 +1,57 @@
 # routes/offer_routes.py
 from flask import Blueprint, request, jsonify
-from models.offer_model import Offer
 from middlewares.auth_middleware import token_required
+from models.offer_model import Offer
 
 # ===============================
-# Blueprint pour offres
+# Blueprint : Offres
 # ===============================
-offer_bp = Blueprint("offer_bp", __name__)
+offer_bp = Blueprint("offer_bp", __name__, url_prefix="/offers")
+
 
 # ===============================
 # Créer une offre
 # ===============================
-@offer_bp.route("/", methods=["POST"])
+@offer_bp.route("", methods=["POST"])
 @token_required
 def create_offer(current_user):
-    data = request.json
-    title = data.get("title")
-    description = data.get("description")
+    data = request.get_json() or {}
+
+    title = data.get("title", "").strip()
+    description = data.get("description", "").strip()
 
     if not title or not description:
-        return jsonify({"error": "Title and description are required"}), 400
+        return jsonify({
+            "error": "Title and description are required"
+        }), 400
 
-    offer = Offer(title=title, description=description)
+    # ✅ CORRECTION ICI
+    offer = Offer(
+        title=title,
+        description=description
+    )
+
     offer_id = offer.save()
+
     return jsonify({
-        "message": "Offer created successfully",
+        "message": "Offer created successfully ✅",
         "offer_id": offer_id
     }), 201
+
 
 # ===============================
 # Lister toutes les offres
 # ===============================
-@offer_bp.route("/", methods=["GET"])
+@offer_bp.route("", methods=["GET"])
 @token_required
 def list_offers(current_user):
     offers = Offer.find_all()
-    return jsonify({"offers": offers}), 200
+
+    return jsonify({
+        "count": len(offers),
+        "offers": offers
+    }), 200
+
 
 # ===============================
 # Récupérer une offre par ID
@@ -44,9 +60,16 @@ def list_offers(current_user):
 @token_required
 def get_offer(current_user, offer_id):
     offer = Offer.find_by_id(offer_id)
+
     if not offer:
-        return jsonify({"error": "Offer not found"}), 404
-    return jsonify({"offer": offer}), 200
+        return jsonify({
+            "error": "Offer not found"
+        }), 404
+
+    return jsonify({
+        "offer": offer
+    }), 200
+
 
 # ===============================
 # Supprimer une offre
@@ -55,9 +78,14 @@ def get_offer(current_user, offer_id):
 @token_required
 def delete_offer(current_user, offer_id):
     offer = Offer.find_by_id(offer_id)
-    if not offer:
-        return jsonify({"error": "Offer not found"}), 404
 
-    # Supprimer l'offre
+    if not offer:
+        return jsonify({
+            "error": "Offer not found"
+        }), 404
+
     Offer.delete(offer_id)
-    return jsonify({"message": "Offer deleted successfully"}), 200
+
+    return jsonify({
+        "message": "Offer deleted successfully 🗑️"
+    }), 200
