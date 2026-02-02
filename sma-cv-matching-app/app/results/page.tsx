@@ -16,7 +16,7 @@ type JobOffer = {
   id?: string;
   title: string;
   description: string;
-  cvCount: number;
+  count: number;
 };
 
 export default function ResultsIndexPage() {
@@ -35,8 +35,8 @@ export default function ResultsIndexPage() {
     const fetchOffers = async () => {
       try {
         const data = await getOffers(token);
-        const filtered = data.filter((o: JobOffer) => o.cvCount > 0);
-        alert(filtered.length)
+        const filtered = data.filter((o: JobOffer) => o.count > 0);
+        alert(filtered.count)
         setOffers(filtered);
       } catch (err) {
         setError(
@@ -119,8 +119,8 @@ export default function ResultsIndexPage() {
                               </p>
                               <div className="mt-3">
                                 <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                                  {offer.cvCount} CV
-                                  {offer.cvCount > 1 ? 's' : ''}
+                                  {offer.count} CV
+                                  {offer.count > 1 ? 's' : ''}
                                 </span>
                               </div>
                             </div>
