@@ -27,7 +27,7 @@ export default function NewOfferPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!title.trim() || !description.trim()) {
       setError('Title and description are required');
       return;
@@ -37,8 +37,14 @@ export default function NewOfferPage() {
 
     setIsLoading(true);
     try {
-      const offer = await createOffer(token, title, description);
-      router.push(`/offers/${offer.id}`);
+      const result = await createOffer(token, title, description);
+
+      if (!result?.offer_id) {
+        throw new Error('Invalid response from server');
+      }
+
+      router.push(`/offers/${result.offer_id}`);
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create offer');
     } finally {
@@ -52,7 +58,7 @@ export default function NewOfferPage() {
         <Sidebar />
         <div className="flex-1 ml-64">
           <Topbar title="Create Job Offer" />
-          
+
           <main className="pt-24 pb-12 px-8">
             <Link href="/offers" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8">
               <ChevronLeft className="w-4 h-4" />

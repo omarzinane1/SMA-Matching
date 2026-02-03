@@ -31,6 +31,7 @@ os.environ["CREWAI_DISABLE_TELEMETRY"] = "true"
 # Initialisation de l'application Flask
 # ===============================
 app = Flask(__name__)
+app.url_map.strict_slashes = False
 
 # Autoriser les requêtes du frontend (Next.js)
 #CORS(app, supports_credentials=True)

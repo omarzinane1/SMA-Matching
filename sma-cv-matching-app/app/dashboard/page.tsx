@@ -23,6 +23,7 @@ export default function DashboardPage() {
       if (!token) return;
       try {
         const offers = await getOffers(token);
+        console.log(offers)
         setStats({
           offers: offers.length,
           cvs: offers.reduce((sum, o) => sum + (o.cv_ids?.length || 0), 0),

@@ -53,7 +53,7 @@ export default function ResultsPage() {
         ]);
 
         const foundOffer = offersData.find(
-          (o: JobOffer) => o.id === offerId || o._id === offerId
+          (o: JobOffer) => o._id === offerId || o._id === offerId
         );
 
         setOffer(foundOffer || null);

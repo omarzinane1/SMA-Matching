@@ -1,24 +1,20 @@
 'use client';
 
-import React from "react"
-
 import { useAuth } from '@/context/AuthContext';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { token } = useAuth();
+  const router = useRouter();
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!token) {
+      router.push('/login');
+    }
+  }, [token, router]);
 
-  if (!isAuthenticated) {
-    redirect('/login');
-  }
+  if (!token) return null;
 
   return <>{children}</>;
 }

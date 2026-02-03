@@ -3,30 +3,32 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { getOffers } from '@/lib/api';
+
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+
 import { ChevronRight, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 
 type JobOffer = {
-  _id?: string;
-  id?: string;
+  _id: string;
   title: string;
   description: string;
-  count: number;
+  cv_ids: any;
 };
 
 export default function ResultsIndexPage() {
   const { token } = useAuth();
+
   const [offers, setOffers] = useState<JobOffer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // ⛔ stop if token not ready
     if (!token) {
       setIsLoading(false);
       return;
@@ -34,9 +36,12 @@ export default function ResultsIndexPage() {
 
     const fetchOffers = async () => {
       try {
-        const data = await getOffers(token);
-        const filtered = data.filter((o: JobOffer) => o.count > 0);
-        alert(filtered.count)
+        setError('');
+
+        const data: JobOffer[] = await getOffers(token);
+
+        const filtered = data.filter(o => o.cv_ids.length > 0);
+
         setOffers(filtered);
       } catch (err) {
         setError(
@@ -60,7 +65,9 @@ export default function ResultsIndexPage() {
 
           <main className="pt-24 pb-12 px-8 max-w-5xl">
             <div className="mb-8">
-              <h2 className="text-xl font-semibold">Candidate Matching Results</h2>
+              <h2 className="text-xl font-semibold">
+                Candidate Matching Results
+              </h2>
               <p className="text-sm text-muted-foreground">
                 View AI-calculated matching scores for uploaded CVs
               </p>
@@ -101,36 +108,36 @@ export default function ResultsIndexPage() {
             {/* LIST */}
             {!isLoading && offers.length > 0 && (
               <div className="space-y-4">
-                {offers.map((offer) => {
-                  const offerId = offer._id || offer.id;
-                  if (!offerId) return null;
+                {offers.map(offer => (
+                  <Link
+                    key={offer._id}
+                    href={`/results/${offer._id}`}
+                  >
+                    <Card className="hover:shadow-md transition cursor-pointer">
+                      <CardContent className="pt-6">
+                        <div className="flex justify-between items-center gap-4">
+                          <div className="flex-1">
+                            <h3 className="font-semibold">
+                              {offer.title}
+                            </h3>
+                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                              {offer.description}
+                            </p>
 
-                  return (
-                    <Link key={offerId} href={`/results/${offerId}`}>
-                      <Card className="hover:shadow-md transition cursor-pointer">
-                        <CardContent className="pt-6">
-                          <div className="flex justify-between items-center gap-4">
-                            <div className="flex-1">
-                              <h3 className="font-semibold">
-                                {offer.title}
-                              </h3>
-                              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                                {offer.description}
-                              </p>
-                              <div className="mt-3">
-                                <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                                  {offer.count} CV
-                                  {offer.count > 1 ? 's' : ''}
-                                </span>
-                              </div>
+                            <div className="mt-3">
+                              <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                                {offer.cv_ids.length} CV
+                                {offer.cv_ids.length > 1 ? 's' : ''}
+                              </span>
                             </div>
-                            <ChevronRight className="w-5 h-5 text-muted-foreground" />
                           </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  );
-                })}
+
+                          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
               </div>
             )}
           </main>
