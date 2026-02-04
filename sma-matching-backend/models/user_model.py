@@ -17,7 +17,7 @@ class User:
         full_name: str,
         email: str,
         password_hash: str,
-        role: str = "user"
+        role: str = "HR Manager"
     ):
         self.full_name = full_name
         self.email = email.lower()
@@ -28,7 +28,7 @@ class User:
     # REGISTER
     # ===============================
     @staticmethod
-    def create(full_name: str, email: str, password: str, role: str = "user"):
+    def create(full_name: str, email: str, password: str, role: str = "HR Manager"):
         password_hash = generate_password_hash(password)
 
         user_data = {
@@ -61,7 +61,7 @@ class User:
             full_name=user_data["full_name"],
             email=user_data["email"],
             password_hash=user_data["password_hash"],
-            role=user_data.get("role", "user")
+            role=user_data.get("role", "HR Manager")
         )
 
         return user, str(user_data["_id"])
@@ -83,7 +83,7 @@ class User:
                 full_name=user_data["full_name"],
                 email=user_data["email"],
                 password_hash=user_data["password_hash"],
-                role=user_data.get("role", "user")
+                role=user_data.get("role", "HR Manager")
             )
         except Exception:
             return None

@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Briefcase } from 'lucide-react';
 
 export default function RegisterPage() {
-  const [name, setName] = useState('');
+  const [full_name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('HR Manager');
@@ -28,7 +28,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const response = await apiRegister(email, password, name, role);
+      const response = await apiRegister(email, password, full_name, role);
       login(response.token, response.user);
       router.push('/dashboard');
     } catch (err) {
@@ -69,7 +69,7 @@ export default function RegisterPage() {
                 id="name"
                 type="text"
                 placeholder="John Doe"
-                value={name}
+                value={full_name}
                 onChange={(e) => setName(e.target.value)}
                 required
                 disabled={isLoading}

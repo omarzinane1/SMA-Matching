@@ -19,7 +19,9 @@ def register():
     full_name = data.get("full_name")
     email = data.get("email")
     password = data.get("password")
+    role = data.get("role", "HR Manager")  # <- par défaut "user" si non fourni
 
+    # Vérifier champs obligatoires
     if not full_name or not email or not password:
         return jsonify({"error": "All fields are required"}), 400
 
@@ -28,13 +30,13 @@ def register():
     if existing_user:
         return jsonify({"error": "Email already exists"}), 400
 
-    # Créer utilisateur
-    user = User(full_name=full_name, email=email, password=password)
-    user_id = user.save()
+    # Créer utilisateur via la méthode create pour gérer role
+    user_id = User.create(full_name=full_name, email=email, password=password, role=role)
 
     return jsonify({
         "message": "User registered successfully",
-        "user_id": user_id
+        "user_id": user_id,
+        "role": role
     }), 201
 
 # ===============================

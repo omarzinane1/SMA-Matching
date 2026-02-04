@@ -10,7 +10,7 @@ export interface AuthResponse {
   user: {
     id: string;
     email: string;
-    name: string;
+    full_name: string;
     role: string;
   };
 }
@@ -66,13 +66,13 @@ export async function login(
 export async function register(
   email: string,
   password: string,
-  name: string,
+  full_name: string,
   role: string
 ): Promise<AuthResponse> {
   const res = await fetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password, name, role }),
+    body: JSON.stringify({ email, password, full_name, role }),
   });
 
   if (!res.ok) {
