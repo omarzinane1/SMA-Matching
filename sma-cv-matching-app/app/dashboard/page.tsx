@@ -30,7 +30,7 @@ export default function DashboardPage() {
           topMatches: 0,
         });
       } catch (err) {
-        console.error('[v0] Error fetching dashboard data:', err);
+        console.error('Error fetching dashboard data:', err);
       } finally {
         setIsLoading(false);
       }

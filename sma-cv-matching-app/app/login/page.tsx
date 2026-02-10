@@ -10,7 +10,7 @@ import { login as apiLogin } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase } from 'lucide-react';
+import { Brain } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -41,8 +41,8 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-4 text-center">
           <div className="flex justify-center">
-            <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center">
-              <Briefcase className="w-7 h-7 text-primary-foreground" />
+            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+              <Brain className="w-6 h-6 text-primary-foreground" />
             </div>
           </div>
           <div>

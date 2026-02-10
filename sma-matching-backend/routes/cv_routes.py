@@ -30,7 +30,13 @@ cv_bp = Blueprint("cv_bp", __name__)
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
+# ===============================
+# Top Matching CV
+# ===============================
+@cv_bp.route("/topCv", methods=['GET'])
+@token_required
+def topcvMatching(current_user, offer_id):
+    return 0
 # ===============================
 # Upload CV + Analyse + Matching
 # ===============================
@@ -72,7 +78,7 @@ def upload_cv(current_user, offer_id):
     try:
         cv_result = extract_skills_from_cv(cv_text)
     except Exception as e:
-        print("❌ CrewAI CV error:", e)
+        print(" CrewAI CV error:", e)
         return jsonify({"error": "AI extraction failed"}), 500
 
     # ---------- Normalisation résultat CV ----------

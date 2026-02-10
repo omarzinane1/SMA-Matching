@@ -11,6 +11,7 @@ import {
   BarChart3,
   LogOut,
   Briefcase,
+  Brain
 } from 'lucide-react';
 
 const navigation = [
@@ -36,7 +37,7 @@ export function Sidebar() {
       <div className="px-6 py-8 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-            <Briefcase className="w-6 h-6 text-primary-foreground" />
+            <Brain className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-sidebar-foreground">SMA</h1>
@@ -50,16 +51,15 @@ export function Sidebar() {
         {navigation.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
           const Icon = item.icon;
-          
+
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                isActive
-                  ? 'bg-sidebar-primary text-sidebar-primary-foreground'
-                  : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-              }`}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive
+                ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                }`}
             >
               <Icon className="w-5 h-5" />
               <span className="font-medium">{item.name}</span>
@@ -72,7 +72,7 @@ export function Sidebar() {
       <div className="px-4 py-6 border-t border-sidebar-border space-y-4">
         <div className="px-4 py-3 bg-sidebar-accent/10 rounded-lg">
           <p className="text-xs text-sidebar-foreground/60">Logged in as</p>
-          <p className="font-medium text-sidebar-foreground truncate">{user?.name}</p>
+          <p className="font-medium text-sidebar-foreground truncate">{user?.full_name}</p>
           <p className="text-xs text-sidebar-foreground/60 truncate">{user?.email}</p>
         </div>
         <button

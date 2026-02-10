@@ -109,3 +109,12 @@ class CV:
         )
 
         return len(cvs)
+    @staticmethod
+    def find_by_top_cv(offer_id: str):
+        """Retourne les top cv"""
+        cvs = cv_collection.find({"offer_id": offer_id}).sort("score", -1)
+        result = []
+        for cv in cvs:
+            # cv["score"] = str(cv["score"])
+            result.append(cv)
+        return result

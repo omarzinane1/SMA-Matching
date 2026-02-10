@@ -14,11 +14,11 @@ export function Topbar({ title }: TopbarProps) {
       <h1 className="text-2xl font-bold text-foreground">{title}</h1>
       <div className="flex items-center gap-4">
         <div className="text-right">
-          <p className="text-sm font-medium text-foreground">{user?.name}</p>
+          <p className="text-sm font-medium text-foreground">{user?.full_name}</p>
           <p className="text-xs text-muted-foreground">{user?.role}</p>
         </div>
         <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
-          {user?.name?.charAt(0).toUpperCase()}
+          {user?.full_name?.charAt(0).toUpperCase()}
         </div>
       </div>
     </div>
