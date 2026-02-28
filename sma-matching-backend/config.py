@@ -1,16 +1,15 @@
 # config.py
 import os
+from dotenv import load_dotenv
 
-# Charger dotenv uniquement local (Render kaydir variables direct)
-if os.getenv("RENDER") is None:
-    from dotenv import load_dotenv
-    load_dotenv()
+
+# Charger les variables d'environnement depuis .env
+load_dotenv()
 
 class Config:
     # ===============================
     # MongoDB
     # ===============================
-    # Utilise Mongo Atlas en prod, localhost en dev
     MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/sma_db")
 
     # ===============================
@@ -21,23 +20,14 @@ class Config:
     # ===============================
     # Crew AI
     # ===============================
-    CREW_AI_API_KEY = os.getenv("CREW_AI_API_KEY", "")
+    CREW_AI_API_KEY = os.getenv("CREW_AI_API_KEY", "your_crew_ai_key_here")
 
     # ===============================
-    # Groq / LLM
+    # Autres configurations Flask
     # ===============================
-    GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-
+    JSON_SORT_KEYS = False  # Pour garder l'ordre des clés dans les réponses JSON
+    DEBUG = True            # Active le debug Flask (désactiver en prod)
+       # ===============================
+    # IA / LLM (Groq)
     # ===============================
-    # Flask settings
-    # ===============================
-    JSON_SORT_KEYS = False  # garder ordre clés JSON
-    DEBUG = os.getenv("FLASK_DEBUG", "False") == "True"  # False en prod
-
-    # ===============================
-    # CORS / Frontend URL (Next.js)
-    # ===============================
-    FRONTEND_URLS = os.getenv(
-        "FRONTEND_URLS",
-        "http://localhost:3000"  # dev
-    ).split(",")  # possibilité plusieurs URLs séparées par virgule
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")

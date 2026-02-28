@@ -1,18 +1,37 @@
-Flask
-Flask-Cors
-gunicorn
+# ===============================
+# Framework Flask
+# ===============================
+Flask==2.3.3
+Flask-Cors==3.0.10
+Flask-PyMongo==2.3.0
 
-flask-pymongo
-pymongo[srv]
-dnspython
+# ===============================
+# MongoDB
+# ===============================
+pymongo==4.4.1
 
-PyJWT
-passlib[bcrypt]
+# ===============================
+# JWT pour authentification
+# ===============================
+PyJWT==2.8.0
+passlib[bcrypt]==1.7.4  # Pour hash des mots de passe
 
-python-docx
-PyPDF2
+# ===============================
+# Upload / parsing fichiers CV
+# ===============================
+python-docx==0.8.11   # Pour lire fichiers .docx
+PyPDF2==3.0.1
 PyMuPDF
 
-requests
+# ===============================
+# Crew AI SDK / requêtes
+# ===============================
+requests==2.31.0       # Pour appels HTTP Crew AI
+# ===============================
+# .env
+# ===============================
 python-dotenv
+# ===============================
+# crewai
+# ===============================
 crewai
