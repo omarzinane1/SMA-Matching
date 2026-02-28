@@ -3,15 +3,13 @@
 # ===============================
 Flask==2.3.3
 Flask-Cors==3.0.10
-pymongo[srv]==3.11
 gunicorn
 
 # ===============================
 # MongoDB
 # ===============================
 flask-pymongo
-pymongo
-
+pymongo[srv]
 # ===============================
 # JWT pour authentification
 # ===============================
